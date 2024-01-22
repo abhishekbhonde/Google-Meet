@@ -1,30 +1,35 @@
-import {useState, useEffect, useRef} from 'react'
+import { useSocket } from "@/context/socket"
+import { useRouter } from "next/router"
 
+const { useState, useEffect, useRef } = require("react")
 
-const useMediaStream = () => {
-    const [state, setState] = useState(null)
-    const isStreamSet = useRef(false)
+const usePeer = () => {
+    const socket = useSocket()
+    const roomId = useRouter().query.roomId;
+    const [peer, setPeer] = useState(null)
+    const [myId, setMyId] = useState('')
+    const isPeerSet = useRef(false)
 
     useEffect(() => {
-        if (isStreamSet.current) return;
-        isStreamSet.current = true;
-        (async function initStream() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: true
-                })
-                console.log("setting your stream")
-                setState(stream)
-            } catch (e) {
-                console.log("Error in media navigator", e)
-            }
+        if (isPeerSet.current || !roomId || !socket) return;
+        isPeerSet.current = true;
+        let myPeer;
+        (async function initPeer() {
+            myPeer = new (await import('peerjs')).default()
+            setPeer(myPeer)
+
+            myPeer.on('open', (id) => {
+                console.log(`your peer id is ${id}`)
+                setMyId(id)
+                socket?.emit('join-room', roomId, id)
+            })
         })()
-    }, [])
+    }, [roomId, socket])
 
     return {
-        stream: state
+        peer,
+        myId
     }
 }
 
-export default useMediaStream
+export default usePeer;
