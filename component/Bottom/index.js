@@ -1,7 +1,8 @@
 import cx from "classnames";
 import { Mic, Video, PhoneOff, MicOff, VideoOff } from "lucide-react";
 
-import styles from "./bottom.module.css"
+import styles from "./bottom.module.css";
+
 const Bottom = (props) => {
   const { muted, playing, toggleAudio, toggleVideo, leaveRoom } = props;
 
